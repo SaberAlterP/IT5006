@@ -15,8 +15,11 @@ To overcome the resource and caching limitations of the free Streamlit Cloud tie
 
 ##  Project Structure
  **`data/`** Used for storing the raw datasets we use.
- **`src/`**  Deployment source code for the Streamlit application, including `app.py`. 
- **`notebooks/`**  Phase 1 data analysis notebooks, including exploratory data analysis (EDA) (e.g., `jzx-EDA.ipynb`). 
+ 
+ **`src/`**  Deployment source code for the Streamlit application, including `Dashboard.py`. 
+ 
+ **`notebooks/`**  Phase 1 data analysis notebooks, including exploratory data analysis (EDA) (e.g., `jzx-EDA.ipynb`).
+ 
  **`requirements.txt`**  Project dependency list.
 
 ---
@@ -27,7 +30,7 @@ Follow these steps to test the project in your local environment:
 
 ### 1. Clone the repository
 ```bash
-git clone [Your Repository URL]
+git clone https://github.com/SaberAlterP/Team15_IT5006_Predicive_Policing_AY2526Sem2.git
 cd [Project Folder Name]
 
 ```
