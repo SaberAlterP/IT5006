@@ -431,7 +431,7 @@ loading = _show_loading_overlay(
     f"Dataset: {HF_DATASET_ID} | Building cached samples for dashboard and maps.",
 )
 try:
-    df_all = load_main_sample(sample_rows=1_000_000, seed=42)
+    df_all = load_main_sample(sample_rows=600_000, seed=42)
     map_df_all = load_map_sample(max_points=60_000, seed=42)
 finally:
     loading.empty()
