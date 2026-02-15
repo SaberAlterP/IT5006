@@ -251,7 +251,7 @@ div[data-testid="stMetricValue"] > div{
 # -----------------------------
 HF_DATASET_ID = "Ayanamikus/chicago-crime"
 
-CACHE_DIR = Path(".streamlit_cache")
+CACHE_DIR = Path("../.streamlit_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 LOCAL_MAIN_SAMPLE = CACHE_DIR / "main_sample_300k.parquet"
@@ -332,7 +332,6 @@ def _balanced_sample_by_year(
 
     out = pd.concat(parts, ignore_index=True) if parts else dfx.sample(n=min(n_total, len(dfx)), random_state=seed)
 
-    # If we undershot (years with few rows), top up from remaining
     if len(out) < min(n_total, len(dfx)):
         remaining = dfx.drop(index=out.index, errors="ignore")
         need = min(n_total - len(out), len(remaining))
@@ -344,10 +343,6 @@ def _balanced_sample_by_year(
 
 @st.cache_data(show_spinner=False)
 def load_main_sample(sample_rows: int = 300_000, seed: int = 42) -> pd.DataFrame:
-    """
-    Main sample for non-map charts & filtering.
-    Cloud-safe: stores only the sample parquet.
-    """
     if LOCAL_MAIN_SAMPLE.exists():
         df = pd.read_parquet(LOCAL_MAIN_SAMPLE, engine="pyarrow")
         return _postprocess_df(df)
@@ -387,10 +382,6 @@ def load_main_sample(sample_rows: int = 300_000, seed: int = 42) -> pd.DataFrame
 
 @st.cache_data(show_spinner=False)
 def load_map_sample(max_points: int = 60_000, seed: int = 42) -> pd.DataFrame:
-    """
-    Map-focused sample (balanced by year, only geo-needed columns).
-    This is what the map uses; it is *not* the full dataset.
-    """
     if LOCAL_MAP_SAMPLE.exists():
         m = pd.read_parquet(LOCAL_MAP_SAMPLE, engine="pyarrow")
         # no extra postprocess needed beyond Year/Date
@@ -417,8 +408,6 @@ def load_map_sample(max_points: int = 60_000, seed: int = 42) -> pd.DataFrame:
     if drop:
         ds = ds.remove_columns(drop)
 
-    # Take an intermediate sample first (to avoid converting full to pandas)
-    # This intermediate sample should be larger than max_points to allow filtering NA coords + stratification.
     intermediate = max(200_000, max_points * 4)
     intermediate = min(intermediate, len(ds))
     ds = ds.shuffle(seed=seed).select(range(intermediate))
@@ -442,7 +431,7 @@ loading = _show_loading_overlay(
     f"Dataset: {HF_DATASET_ID} | Building cached samples for dashboard and maps.",
 )
 try:
-    df_all = load_main_sample(sample_rows=300_000, seed=42)
+    df_all = load_main_sample(sample_rows=1_000_000, seed=42)
     map_df_all = load_map_sample(max_points=60_000, seed=42)
 finally:
     loading.empty()
@@ -691,7 +680,7 @@ with tab1:
 # Tab 2: Spatial Analysis (Map)  <-- your priority
 # ----------------------------
 with tab2:
-    st.markdown("### Interactive Spatial Patterns (Balanced sample, Cloud-safe)")
+    st.markdown("### Interactive Spatial Patterns")
 
     needed = {"Latitude", "Longitude", "Year", "Primary Type"}
     missing = [c for c in needed if c not in map_df.columns]
@@ -834,7 +823,6 @@ with tab4:
     st.markdown("### Data Diagnostics")
     st.markdown(
         """
-- **Data Source**: Hugging Face dataset `Ayanamikus/chicago-crime` (loaded via `datasets` with Cloud-safe caching).
 - **Maps**: Use a cached balanced sample with coordinates to keep animations/heatmaps responsive.
 """
     )
@@ -847,4 +835,4 @@ with tab4:
         fig_corr = px.imshow(corr, text_auto=".2f", color_continuous_scale="RdBu_r", title="Numeric Correlations")
         st.plotly_chart(fig_corr, use_container_width=True)
     else:
-        st.info("No numeric columns available for correlation plot.")
+        st.info("No numeric columns available for correlation plot")

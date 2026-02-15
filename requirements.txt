@@ -1,5 +1,7 @@
-streamlit
+datasets
+holidays
+matplotlib
 pandas
 plotly
-datasets
-pyarrow
+seaborn
+streamlit
